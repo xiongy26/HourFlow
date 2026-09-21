@@ -189,16 +189,40 @@ class TaskManagerWidget(QWidget):
 
         add_btn = QPushButton("+ 添加任务")
         add_btn.setObjectName("primary_button")
+        add_btn.setStyleSheet(
+            f"QPushButton {{ "
+            f"background: {ACCENT}; color: #FFFFFF; "
+            f"border: none; border-radius: 8px; "
+            f"padding: 8px 16px; font-size: 13px; font-weight: 600; "
+            f"}} "
+            f"QPushButton:hover {{ background: #3D4AB8; }}"
+        )
         add_btn.clicked.connect(self._show_add_task_dialog)
         footer_layout.addWidget(add_btn)
 
         optimize_btn = QPushButton("优化安排")
         optimize_btn.setObjectName("secondary_button")
+        optimize_btn.setStyleSheet(
+            f"QPushButton {{ "
+            f"background: #F0F2F5; color: #4B5563; "
+            f"border: 1px solid #E3E5EC; border-radius: 8px; "
+            f"padding: 8px 16px; font-size: 13px; font-weight: 600; "
+            f"}} "
+            f"QPushButton:hover {{ background: #E5E7EB; }}"
+        )
         optimize_btn.clicked.connect(self._optimize_schedule)
         footer_layout.addWidget(optimize_btn)
 
         clear_btn = QPushButton("清已完成")
         clear_btn.setObjectName("secondary_button")
+        clear_btn.setStyleSheet(
+            f"QPushButton {{ "
+            f"background: #F0F2F5; color: #4B5563; "
+            f"border: 1px solid #E3E5EC; border-radius: 8px; "
+            f"padding: 8px 16px; font-size: 13px; font-weight: 600; "
+            f"}} "
+            f"QPushButton:hover {{ background: #E5E7EB; }}"
+        )
         clear_btn.clicked.connect(self._clear_completed)
         footer_layout.addWidget(clear_btn)
 

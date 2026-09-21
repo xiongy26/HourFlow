@@ -92,12 +92,21 @@ class CompactRingWidget(QWidget):
             painter.drawArc(cx - radius, cy - radius, radius * 2, radius * 2,
                            start_angle, span_angle)
 
-        # 中心小图标（时钟感）
-        painter.setPen(QPen(self._color, 1.5))
-        painter.setBrush(Qt.NoBrush)
-        painter.drawEllipse(cx - 4, cy - 4, 8, 8)
-        painter.drawLine(cx, cy - 2, cx, cy)
-        painter.drawLine(cx, cy, cx + 2, cy + 1)
+        # 中心点
+        painter.setPen(QPen(self._color, 2))
+        painter.setBrush(self._color)
+        painter.drawEllipse(cx - 3, cy - 3, 6, 6)
+
+        # 进度指针（从圆心指向当前进度位置）
+        import math
+        angle_deg = 90 - (360 * self._progress / 100)  # 从12点方向顺时针
+        angle_rad = math.radians(angle_deg)
+        pointer_length = radius - 8
+        end_x = cx + pointer_length * math.cos(angle_rad)
+        end_y = cy - pointer_length * math.sin(angle_rad)
+        
+        painter.setPen(QPen(self._color, 3, Qt.SolidLine, Qt.RoundCap))
+        painter.drawLine(cx, cy, int(end_x), int(end_y))
 
 
 class MainWindow(QMainWindow):
@@ -116,8 +125,8 @@ class MainWindow(QMainWindow):
     def _init_ui(self):
         """初始化UI"""
         self.setWindowTitle("HourFlow")
-        self.setMinimumSize(680, 56)
-        self.resize(680, 56)
+        self.setMinimumSize(280, 280)
+        self.resize(280, 280)
 
         self._apply_opacity()
 
@@ -153,92 +162,80 @@ class MainWindow(QMainWindow):
         timer.start(60000)
 
     def _create_compact_bar(self) -> QWidget:
-        """创建紧凑模式头部"""
+        """创建紧凑模式 - 正方形极简：大圆环 + 下方倒计时"""
         bar = QFrame()
         bar.setObjectName("header_bar")
-        bar.setFixedHeight(56)
         bar.setStyleSheet("""
             #header_bar {
                 background: #FFFFFF;
-                border-bottom: 1px solid #ECEDF2;
             }
         """)
 
-        layout = QHBoxLayout(bar)
-        layout.setContentsMargins(16, 0, 12, 0)
-        layout.setSpacing(12)
+        main_vbox = QVBoxLayout(bar)
+        main_vbox.setContentsMargins(0, 8, 0, 8)
+        main_vbox.setSpacing(4)
 
-        # Logo
-        logo_label = QLabel("⏱")
-        logo_label.setStyleSheet("font-size: 20px; background: transparent;")
-        layout.addWidget(logo_label)
-
-        # 品牌名
-        brand = QLabel("HourFlow")
-        brand.setObjectName("app_brand")
-        brand.setStyleSheet("font-size: 14px; font-weight: 700; color: #1F2430;")
-        layout.addWidget(brand)
-
-        layout.addSpacing(8)
-
-        # 进度环（紧凑版）
-        self._compact_ring = CompactRingWidget()
-        self._compact_ring.setFixedSize(36, 36)
-        layout.addWidget(self._compact_ring)
-
-        # 进度百分比
-        self._compact_progress_label = QLabel("0%")
-        self._compact_progress_label.setStyleSheet(
-            "font-size: 11px; color: #8A8F9C; font-weight: 600;"
-        )
-        layout.addWidget(self._compact_progress_label)
-
-        layout.addSpacing(8)
-
-        # 倒计时（醒目显示）
-        self._compact_countdown = QLabel("00:00")
-        self._compact_countdown.setStyleSheet(
-            "font-size: 26px; font-weight: 800; "
-            "color: #4F5BD5; font-family: 'SF Mono', Consolas, monospace;"
-        )
-        layout.addWidget(self._compact_countdown)
-
-        # 单位
-        unit = QLabel("时:分")
-        unit.setStyleSheet("font-size: 11px; color: #8A8F9C;")
-        layout.addWidget(unit)
-
-        layout.addSpacing(8)
-
-        # 日期时间
-        self._compact_datetime = QLabel()
-        self._compact_datetime.setStyleSheet(
-            "font-size: 12px; color: #6B7280;"
-        )
-        layout.addWidget(self._compact_datetime)
-
-        layout.addSpacing(4)
-
-        # 展开/收起按钮
-        self._toggle_btn = QPushButton("↗ 展开")
-        self._toggle_btn.setObjectName("secondary_button")
-        self._toggle_btn.setFixedHeight(30)
+        # 顶部：展开按钮（右上角，极简）
+        top_row = QHBoxLayout()
+        top_row.setContentsMargins(8, 0, 8, 0)
+        top_row.addStretch()
+        self._toggle_btn = QPushButton("展开")
+        self._toggle_btn.setFlat(True)
+        self._toggle_btn.setCursor(Qt.PointingHandCursor)
         self._toggle_btn.setStyleSheet("""
             QPushButton {
-                background: #F0F2F5;
-                color: #4B5563;
-                border: 1px solid #E3E5EC;
-                border-radius: 8px;
-                padding: 4px 12px;
-                font-size: 12px;
-                font-weight: 600;
+                background: transparent;
+                color: #B0B4BE;
+                border: none;
+                font-size: 11px;
             }
-            QPushButton:hover {
-                background: #E5E7EB;
-            }
+            QPushButton:hover { color: #6B7280; }
         """)
         self._toggle_btn.clicked.connect(self._toggle_view)
-        layout.addWidget(self._toggle_btn)
+        top_row.addWidget(self._toggle_btn)
+        main_vbox.addLayout(top_row)
+
+        main_vbox.addStretch()
+
+        # 圆环容器（居中，圆环里叠放百分比）
+        ring_container = QWidget()
+        ring_container.setFixedSize(160, 160)
+        self._compact_ring = CompactRingWidget(ring_container)
+        self._compact_ring.setFixedSize(160, 160)
+        self._compact_ring.move(0, 0)
+
+        self._compact_progress_label = QLabel("0%", ring_container)
+        self._compact_progress_label.setAlignment(Qt.AlignCenter)
+        self._compact_progress_label.setFixedSize(160, 160)
+        self._compact_progress_label.setStyleSheet(
+            "font-size: 28px; font-weight: 800; color: #1F2430; "
+            "font-family: 'SF Mono', Consolas, monospace; background: transparent;"
+        )
+
+        ring_row = QHBoxLayout()
+        ring_row.addStretch()
+        ring_row.addWidget(ring_container)
+        ring_row.addStretch()
+        main_vbox.addLayout(ring_row)
+
+        # 倒计时（圆环下方）
+        self._compact_countdown = QLabel("00:00")
+        self._compact_countdown.setAlignment(Qt.AlignCenter)
+        self._compact_countdown.setStyleSheet(
+            "font-size: 30px; font-weight: 800; "
+            "color: #4F5BD5; font-family: 'SF Mono', Consolas, monospace; background: transparent;"
+        )
+        main_vbox.addWidget(self._compact_countdown)
+
+        # 日期时间（小字，最下方）
+        self._compact_datetime = QLabel()
+        self._compact_datetime.setAlignment(Qt.AlignCenter)
+        self._compact_datetime.setStyleSheet(
+            "font-size: 11px; color: #B0B4BE; background: transparent;"
+        )
+        main_vbox.addWidget(self._compact_datetime)
+
+        main_vbox.addStretch()
 
         return bar
 
@@ -333,9 +330,9 @@ class MainWindow(QMainWindow):
             self._full_content.hide()
             self._compact_bar.show()
             self._menu_bar_widget.hide()
-            self._toggle_btn.setText("↗ 展开")
-            self.setMinimumSize(680, 56)
-            self.resize(680, 56)
+            self._toggle_btn.setText("展开")
+            self.setMinimumSize(280, 280)
+            self.resize(280, 280)
         else:
             # 展开为完整视图
             self._full_content.show()
