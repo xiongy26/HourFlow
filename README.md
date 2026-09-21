@@ -74,7 +74,7 @@ python -m venv venv
 
 # 3. 激活虚拟环境
 # Linux/macOS:
-source venv/bin/activate
+source .venv/bin/activate
 # Windows:
 venv\Scripts\activate
 

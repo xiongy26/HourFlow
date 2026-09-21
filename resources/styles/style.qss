@@ -1,209 +1,485 @@
-/* 上班助手 - QSS 样式文件 */
+/* ============================================================
+   HourFlow · 设计令牌 (Design Tokens)
+   配色 / 圆角 / 间距 / 字体层级 统一定义，供全局样式复用
+   ============================================================ */
 
-/* 全局样式 */
+/* 全局背景：浅灰基调，制造出内容"悬浮卡片"的层级感 */
 QMainWindow {
-    background-color: #FFFFFF;
+    background-color: #F5F6FA;
 }
 
-/* 标签样式 */
+QWidget {
+    font-family: "PingFang SC", "Microsoft YaHei UI", "Segoe UI", sans-serif;
+}
+
+/* ------------------------------------------------------------
+   文本层级
+   ------------------------------------------------------------ */
 QLabel {
-    color: #1F2937;
-    font-size: 14px;
+    color: #1F2430;
+    font-size: 13px;
+    background: transparent;
 }
 
-/* 标题样式 */
-#countdown_title, #schedule_title, #task_title, #viz_title {
+/* 区块标题（今日计划 / 任务管理 / 时间进度 等） */
+#section_title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1F2430;
+    letter-spacing: 0.3px;
+}
+
+/* 区块副标题/说明文字 */
+#section_subtitle {
+    font-size: 12px;
+    color: #8A8F9C;
+}
+
+/* 顶部状态栏 - 应用名 */
+#app_brand {
     font-size: 16px;
-    font-weight: bold;
-    color: #1F2937;
+    font-weight: 700;
+    color: #1F2430;
 }
 
-/* 倒计时样式 */
+#app_brand_tag {
+    font-size: 11px;
+    color: #9AA0AC;
+}
+
+/* 顶部状态栏 - 日期/星期 */
+#header_date {
+    font-size: 13px;
+    color: #5B6472;
+    font-weight: 500;
+}
+
+#header_status_pill {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 10px;
+}
+
+/* ------------------------------------------------------------
+   倒计时卡片
+   ------------------------------------------------------------ */
+#countdown_card {
+    background-color: #FFFFFF;
+    border-radius: 16px;
+    border: 1px solid #ECEDF2;
+}
+
+#countdown_title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #8A8F9C;
+    letter-spacing: 0.5px;
+}
+
 #countdown_time {
-    font-size: 48px;
-    font-weight: bold;
-    color: #3B82F6;
+    font-size: 52px;
+    font-weight: 700;
 }
 
-/* 当前时间样式 */
+#countdown_unit {
+    font-size: 12px;
+    color: #9AA0AC;
+}
+
 #current_time {
-    font-size: 14px;
+    font-size: 13px;
     color: #6B7280;
+    font-weight: 500;
 }
 
-/* 星期样式 */
 #weekday {
-    font-size: 14px;
-    color: #6B7280;
+    font-size: 12px;
+    color: #9AA0AC;
 }
 
-/* 状态样式 */
 #status {
-    font-size: 14px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 8px;
+    background: #EEF2FF;
+    color: #4F5BD5;
 }
 
-/* 进度百分比样式 */
+/* ------------------------------------------------------------
+   时间进度环卡片
+   ------------------------------------------------------------ */
+#viz_card {
+    background-color: #FFFFFF;
+    border-radius: 16px;
+    border: 1px solid #ECEDF2;
+}
+
+#viz_title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #8A8F9C;
+    letter-spacing: 0.5px;
+}
+
 #progress_percent {
-    font-size: 24px;
-    font-weight: bold;
-    color: #3B82F6;
+    font-size: 26px;
+    font-weight: 700;
+    color: #1F2430;
 }
 
-/* 统计样式 */
-#stats, #task_stats {
+#progress_caption {
+    font-size: 11px;
+    color: #9AA0AC;
+}
+
+#stats {
     font-size: 12px;
     color: #6B7280;
 }
 
-/* 统计部件样式 */
-#stats_widget {
-    font-size: 13px;
-    color: #4B5563;
-    background: #F9FAFB;
-    padding: 10px;
-    border-radius: 8px;
+/* ------------------------------------------------------------
+   今日计划（时间轴）
+   ------------------------------------------------------------ */
+#schedule_card {
+    background-color: #FFFFFF;
+    border-radius: 16px;
+    border: 1px solid #ECEDF2;
 }
 
-/* 按钮样式 */
+#schedule_title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1F2430;
+}
+
+#schedule_scroll {
+    border: none;
+    background: transparent;
+}
+
+#empty_state_label {
+    color: #B0B5C0;
+    font-size: 13px;
+    padding: 32px 20px;
+}
+
+/* 时间块 */
+#time_block {
+    background: #F7F8FB;
+    border-radius: 10px;
+}
+
+#time_block[current="true"] {
+    background: #EEF2FF;
+}
+
+#time_label {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+#duration_label {
+    font-size: 11px;
+    color: #9AA0AC;
+}
+
+#description_label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1F2430;
+}
+
+#type_badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+/* ------------------------------------------------------------
+   任务管理（侧栏）
+   ------------------------------------------------------------ */
+#task_card {
+    background-color: #FFFFFF;
+    border-radius: 16px;
+    border: 1px solid #ECEDF2;
+}
+
+#task_title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1F2430;
+}
+
+#task_stats {
+    font-size: 12px;
+    color: #9AA0AC;
+}
+
+#task_list {
+    border: none;
+    background: transparent;
+    outline: none;
+}
+
+#task_list::item {
+    border: none;
+    padding: 2px 0;
+}
+
+#task_list::item:selected {
+    background: transparent;
+}
+
+#task_item {
+    background: #F7F8FB;
+    border-radius: 10px;
+}
+
+#priority_chip {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+/* ------------------------------------------------------------
+   按钮
+   ------------------------------------------------------------ */
 QPushButton {
-    background-color: #3B82F6;
+    background-color: #4F5BD5;
     color: white;
     border: none;
     padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
 }
 
 QPushButton:hover {
-    background-color: #2563EB;
+    background-color: #4249B8;
 }
 
 QPushButton:pressed {
-    background-color: #1D4ED8;
+    background-color: #363C9C;
 }
 
 QPushButton:disabled {
-    background-color: #D1D5DB;
-    color: #9CA3AF;
+    background-color: #E3E5EC;
+    color: #B0B5C0;
 }
 
-/* 输入框样式 */
+QPushButton#secondary_button {
+    background-color: #FFFFFF;
+    color: #4B5563;
+    border: 1px solid #E3E5EC;
+}
+
+QPushButton#secondary_button:hover {
+    background-color: #F5F6FA;
+    border-color: #D1D5DB;
+}
+
+QPushButton#add_task_button {
+    background: #4F5BD5;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+}
+
+QPushButton#add_task_button:hover {
+    background: #4249B8;
+}
+
+QPushButton#primary_button {
+    background: #4F5BD5;
+    color: white;
+}
+
+QPushButton#primary_button:hover {
+    background: #4249B8;
+}
+
+/* ------------------------------------------------------------
+   输入控件
+   ------------------------------------------------------------ */
 QLineEdit, QSpinBox, QComboBox {
     padding: 8px 12px;
-    border: 1px solid #D1D5DB;
-    border-radius: 6px;
-    font-size: 14px;
-    background-color: white;
+    border: 1px solid #E3E5EC;
+    border-radius: 8px;
+    font-size: 13px;
+    background-color: #FFFFFF;
+    color: #1F2430;
 }
 
 QLineEdit:focus, QSpinBox:focus, QComboBox:focus {
-    border-color: #3B82F6;
+    border-color: #4F5BD5;
 }
 
-/* 复选框样式 */
+QComboBox::drop-down {
+    border: none;
+    width: 24px;
+}
+
+/* 复选框 */
 QCheckBox {
     spacing: 8px;
-    font-size: 14px;
+    font-size: 13px;
+    color: #1F2430;
 }
 
 QCheckBox::indicator {
     width: 18px;
     height: 18px;
-    border-radius: 4px;
-    border: 2px solid #D1D5DB;
+    border-radius: 5px;
+    border: 2px solid #D8DBE3;
+    background: #FFFFFF;
 }
 
 QCheckBox::indicator:checked {
-    background-color: #3B82F6;
-    border-color: #3B82F6;
+    background-color: #4F5BD5;
+    border-color: #4F5BD5;
 }
 
-/* 组样式 */
+/* 分组框 */
 QGroupBox {
-    font-weight: bold;
-    border: 1px solid #E5E7EB;
-    border-radius: 8px;
-    margin-top: 10px;
-    padding-top: 10px;
+    font-weight: 600;
+    font-size: 13px;
+    color: #1F2430;
+    border: 1px solid #ECEDF2;
+    border-radius: 12px;
+    margin-top: 14px;
+    padding-top: 14px;
+    background: #FBFBFD;
 }
 
 QGroupBox::title {
     subcontrol-origin: margin;
-    left: 10px;
-    padding: 0 5px;
+    left: 12px;
+    padding: 0 6px;
+    color: #5B6472;
 }
 
-/* 列表样式 */
+/* 列表 */
 QListWidget {
-    border: 1px solid #E5E7EB;
-    border-radius: 8px;
-    background: white;
+    border: none;
+    background: transparent;
     outline: none;
 }
 
 QListWidget::item {
-    padding: 8px;
-    border-bottom: 1px solid #F3F4F6;
+    padding: 4px;
+    border: none;
 }
 
 QListWidget::item:selected {
-    background-color: #EFF6FF;
+    background-color: transparent;
 }
 
-/* 滚动条样式 */
+/* 滑块 */
+QSlider::groove:horizontal {
+    height: 4px;
+    background: #E3E5EC;
+    border-radius: 2px;
+}
+
+QSlider::handle:horizontal {
+    background: #4F5BD5;
+    width: 16px;
+    height: 16px;
+    margin: -6px 0;
+    border-radius: 8px;
+}
+
+QSlider::sub-page:horizontal {
+    background: #4F5BD5;
+    border-radius: 2px;
+}
+
+/* 滚动条 */
 QScrollBar:vertical {
     width: 8px;
     background: transparent;
+    margin: 4px 0;
 }
 
 QScrollBar::handle:vertical {
-    background: #D1D5DB;
+    background: #D8DBE3;
     border-radius: 4px;
-    min-height: 20px;
+    min-height: 24px;
 }
 
 QScrollBar::handle:vertical:hover {
-    background: #9CA3AF;
+    background: #B0B5C0;
 }
 
-/* 菜单样式 */
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0;
+}
+
+/* 菜单栏 / 菜单 */
 QMenuBar {
-    background-color: #F9FAFB;
-    border-bottom: 1px solid #E5E7EB;
+    background-color: #F5F6FA;
+    border-bottom: 1px solid #ECEDF2;
+    padding: 2px 6px;
 }
 
 QMenuBar::item {
-    padding: 8px 12px;
+    padding: 6px 12px;
     background: transparent;
+    border-radius: 6px;
+    color: #5B6472;
 }
 
 QMenuBar::item:selected {
-    background-color: #E5E7EB;
+    background-color: #ECEDF2;
+    color: #1F2430;
 }
 
 QMenu {
-    background-color: white;
-    border: 1px solid #E5E7EB;
-    border-radius: 8px;
+    background-color: #FFFFFF;
+    border: 1px solid #ECEDF2;
+    border-radius: 10px;
     padding: 4px;
 }
 
 QMenu::item {
     padding: 8px 24px;
-    border-radius: 4px;
+    border-radius: 6px;
+    color: #1F2430;
 }
 
 QMenu::item:selected {
-    background-color: #EFF6FF;
+    background-color: #EEF2FF;
+    color: #4F5BD5;
 }
 
-/* 对话框样式 */
+/* 对话框 / 消息框 */
 QDialog {
-    background-color: white;
+    background-color: #FFFFFF;
 }
 
-/* 消息框样式 */
 QMessageBox {
-    background-color: white;
+    background-color: #FFFFFF;
+}
+
+/* 顶部状态栏容器 */
+#header_bar {
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #ECEDF2;
+}
+
+/* 侧栏容器 */
+#sidebar_panel {
+    background-color: transparent;
+}
+
+/* 分隔线 */
+QFrame#v_divider {
+    background-color: #ECEDF2;
+    max-width: 1px;
 }
