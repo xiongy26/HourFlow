@@ -70,7 +70,7 @@ git clone https://github.com/yourusername/workcountdown.git
 cd workcountdown
 
 # 2. 创建虚拟环境（推荐）
-python -m venv venv
+python -m venv .venv
 
 # 3. 激活虚拟环境
 # Linux/macOS:

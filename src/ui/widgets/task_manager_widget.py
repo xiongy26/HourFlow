@@ -35,7 +35,6 @@ class TaskItemWidget(QFrame):
 
     def _init_ui(self):
         self.setObjectName("task_item")
-        self._apply_style()
 
         layout = QHBoxLayout(self)
         layout.setSpacing(8)
@@ -90,6 +89,8 @@ class TaskItemWidget(QFrame):
         )
         del_btn.clicked.connect(lambda: self.delete_requested.emit(self._task.id))
         layout.addWidget(del_btn)
+
+        self._apply_style()
 
     def _apply_style(self):
         if self._task.completed:
