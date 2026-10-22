@@ -11,7 +11,7 @@ from PySide6.QtGui import QFont
 from src.models.time_block import TimeBlock, BlockType
 from src.core.task_manager import TaskManager
 from src.core.config_manager import ConfigManager
-from src.utils.time_utils import format_time_range
+from src.utils.time_utils import format_time_range, get_lunch_window
 
 ACCENT = "#4F5BD5"
 GREEN = "#22C55E"
@@ -129,7 +129,13 @@ class ScheduleWidget(QWidget):
         work_end = now.replace(hour=end_hour, minute=end_min, second=0)
 
         self._time_blocks = ScheduleOptimizer.allocate_time_blocks(
-            tasks, work_start, work_end
+            tasks, work_start, work_end,
+            lunch=get_lunch_window(
+                now, work_start, work_end,
+                self._config.is_lunch_break_enabled(),
+                self._config.get_lunch_break_start(),
+                self._config.get_lunch_break_end()
+            )
         )
 
         blocks_data = [b.to_dict() for b in self._time_blocks]
@@ -192,6 +198,7 @@ class TimeBlockItem(QFrame):
             BlockType.WORK: ACCENT,
             BlockType.BREAK: GREEN,
             BlockType.MEETING: ORANGE,
+            BlockType.LUNCH: PURPLE,
         }
         dot_color = color_map.get(self._block.type, ACCENT)
         dot.setStyleSheet(
@@ -222,6 +229,7 @@ class TimeBlockItem(QFrame):
             BlockType.WORK: ("工作", ACCENT, "#EEF2FF"),
             BlockType.BREAK: ("休息", GREEN, "#ECFDF5"),
             BlockType.MEETING: ("会议", ORANGE, "#FFFBEB"),
+            BlockType.LUNCH: ("午休", PURPLE, "#F5F3FF"),
         }
         type_text, type_fg, type_bg = type_map.get(
             self._block.type, ("工作", ACCENT, "#EEF2FF")

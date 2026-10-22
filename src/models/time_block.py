@@ -11,6 +11,7 @@ class BlockType(Enum):
     WORK = "work"
     BREAK = "break"
     MEETING = "meeting"
+    LUNCH = "lunch"
 
     @classmethod
     def from_string(cls, value: str) -> 'BlockType':

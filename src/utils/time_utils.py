@@ -27,6 +27,46 @@ def format_countdown(seconds: int, show_seconds: bool = False) -> str:
         return f"{hours:02d}:{minutes:02d}"
 
 
+def _at(now: datetime, time_str: str) -> datetime:
+    """把 "HH:MM" 解析成 now 所在当天的 datetime"""
+    hour, minute = map(int, time_str.split(':'))
+    return now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+
+
+def _overlap_seconds(a_start: datetime, a_end: datetime,
+                     b_start: datetime, b_end: datetime) -> float:
+    """两个时间区间的重叠秒数（无重叠返回 0）"""
+    lo = max(a_start, b_start)
+    hi = min(a_end, b_end)
+    return max((hi - lo).total_seconds(), 0.0)
+
+
+def get_lunch_window(now: datetime, window_start: datetime, window_end: datetime,
+                  lunch_break_enabled: bool,
+                  lunch_break_start: str, lunch_break_end: str
+                  ) -> Optional[Tuple[datetime, datetime]]:
+    """
+    计算午休区间与给定时间窗口的交集。
+
+    午休配置可能落在工作时段之外（例如班次 09:00–12:00 而午休仍是 12:00–13:30），
+    直接按配置时长扣减会算出负的总工时，所以这里先裁剪到窗口内。
+    午休未启用、结束早于开始或与窗口无交集时返回 None。
+    """
+    if not lunch_break_enabled:
+        return None
+
+    lunch_start = _at(now, lunch_break_start)
+    lunch_end = _at(now, lunch_break_end)
+    if lunch_end <= lunch_start:
+        return None
+
+    lo = max(lunch_start, window_start)
+    hi = min(lunch_end, window_end)
+    if hi <= lo:
+        return None
+    return lo, hi
+
+
 def calculate_work_progress(
     work_start_time: str,
     work_end_time: str,
@@ -36,6 +76,8 @@ def calculate_work_progress(
 ) -> float:
     """
     计算工作时间进度百分比（排除午休时间）
+
+    午休期间进度保持不变：午休中已经流逝的那部分会从已工作时长中扣除。
 
     Args:
         work_start_time: 上班时间 "HH:MM"
@@ -49,21 +91,8 @@ def calculate_work_progress(
     """
     now = datetime.now()
 
-    start_hour, start_min = map(int, work_start_time.split(':'))
-    end_hour, end_min = map(int, work_end_time.split(':'))
-
-    start = now.replace(
-        hour=start_hour,
-        minute=start_min,
-        second=0,
-        microsecond=0
-    )
-    end = now.replace(
-        hour=end_hour,
-        minute=end_min,
-        second=0,
-        microsecond=0
-    )
+    start = _at(now, work_start_time)
+    end = _at(now, work_end_time)
 
     # 如果还未到上班时间
     if now < start:
@@ -73,39 +102,18 @@ def calculate_work_progress(
     if now >= end:
         return 100.0
 
-    # 计算总工作时长（秒）
+    # 总工作时长（秒）
     total_work_seconds = (end - start).total_seconds()
 
-    # 如果启用午休，减去午休时间
-    if lunch_break_enabled:
-        lunch_s, lunch_e = map(int, lunch_break_start.split(':'))
-        lunch_start = now.replace(hour=lunch_s, minute=lunch_e, second=0, microsecond=0)
-        lunch_end = now.replace(hour=lunch_e, minute=0, second=0, microsecond=0) if lunch_e == 0 else now.replace(hour=lunch_e, minute=0, second=0, microsecond=0)
-
-        # 重新解析午餐时间
-        lb_start_hour, lb_start_min = map(int, lunch_break_start.split(':'))
-        lb_end_hour, lb_end_min = map(int, lunch_break_end.split(':'))
-        lunch_start = now.replace(hour=lb_start_hour, minute=lb_start_min, second=0, microsecond=0)
-        lunch_end = now.replace(hour=lb_end_hour, minute=lb_end_min, second=0, microsecond=0)
-
-        lunch_duration = (lunch_end - lunch_start).total_seconds()
-        total_work_seconds -= lunch_duration
-
-    # 计算已工作时间（秒）
+    # 已工作时间（秒）
     elapsed_seconds = (now - start).total_seconds()
 
-    # 如果当前在午休时间内，不计算进度
-    if lunch_break_enabled:
-        lb_start_hour, lb_start_min = map(int, lunch_break_start.split(':'))
-        lb_end_hour, lb_end_min = map(int, lunch_break_end.split(':'))
-        lunch_start = now.replace(hour=lb_start_hour, minute=lb_start_min, second=0, microsecond=0)
-        lunch_end = now.replace(hour=lb_end_hour, minute=lb_end_min, second=0, microsecond=0)
-
-        # 如果在午休前已经工作了一段时间
-        if now > lunch_start:
-            # 已度过午休时间长度
-            if now >= lunch_end:
-                elapsed_seconds -= (lunch_end - lunch_start).total_seconds()
+    # 启用午休时：总时长扣掉整段午休，已工作时长扣掉「午休中已流逝」的部分
+    lunch = get_lunch_window(now, start, end, lunch_break_enabled,
+                          lunch_break_start, lunch_break_end)
+    if lunch:
+        total_work_seconds -= (lunch[1] - lunch[0]).total_seconds()
+        elapsed_seconds -= _overlap_seconds(start, now, lunch[0], lunch[1])
 
     if total_work_seconds <= 0:
         return 0.0
@@ -123,6 +131,8 @@ def calculate_time_remaining(
 ) -> int:
     """
     计算距离下班的时间（秒），考虑午休时间
+
+    午休期间剩余工时保持不变：午休中尚未消耗的部分不计入剩余工时。
 
     Args:
         work_end_hour: 下班小时（24小时制）
@@ -146,26 +156,15 @@ def calculate_time_remaining(
     if now >= end_time:
         return 0
 
-    # 计算基础剩余时间
-    remaining = int((end_time - now).total_seconds())
+    remaining = (end_time - now).total_seconds()
 
-    # 如果启用午休，减去午休时间
-    if lunch_break_enabled:
-        lb_start_hour, lb_start_min = map(int, lunch_break_start.split(':'))
-        lb_end_hour, lb_end_min = map(int, lunch_break_end.split(':'))
+    # 剩余工时 = 到下班的时长 - 尚未消耗的午休时长（午休中则只扣剩下的那段）
+    lunch = get_lunch_window(now, now, end_time, lunch_break_enabled,
+                          lunch_break_start, lunch_break_end)
+    if lunch:
+        remaining -= (lunch[1] - lunch[0]).total_seconds()
 
-        lunch_start = now.replace(hour=lb_start_hour, minute=lb_start_min, second=0, microsecond=0)
-        lunch_end = now.replace(hour=lb_end_hour, minute=lb_end_min, second=0, microsecond=0)
-
-        # 如果当前在午休前，且下班时间在午休后
-        if now < lunch_start and end_time > lunch_end:
-            lunch_duration = (lunch_end - lunch_start).total_seconds()
-            remaining -= int(lunch_duration)
-        # 如果当前在午休期间
-        elif now >= lunch_start and now < lunch_end:
-            remaining += int((lunch_end - now).total_seconds())
-
-    return max(remaining, 0)
+    return max(int(remaining), 0)
 
 
 def is_workday(work_days: List[int]) -> bool:
